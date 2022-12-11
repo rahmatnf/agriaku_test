@@ -1,0 +1,77 @@
+DECLARE @table_date TABLE (date_list date null,week_number int,week_day int,semester int);
+DECLARE @table_date2 TABLE (date_list date null,week_number int,week_day int, semester int);
+declare @startdate date='2020-01-27',@enddate date='2020-04-26',@startdate2 date='2019-09-09',@enddate2 date='2019-12-08'
+
+while (@startdate<@enddate)
+begin
+	INSERT INTO @table_date (date_list,week_number,week_day,semester)
+	select @startdate,DATEPART(week,cast(@startdate as date))-4,DATEPART(dw,cast(@startdate as date)), 2 semester
+	set @startdate=dateadd(day,1,@startdate)
+end;
+
+while (@startdate2<@enddate2)
+begin
+	INSERT INTO @table_date2 (date_list,week_number,week_day,semester)
+	select @startdate2,DATEPART(week,cast(@startdate2 as date))-36,DATEPART(dw,cast(@startdate2 as date)),1 semester
+	set @startdate2=dateadd(day,1,@startdate2)
+end;
+
+with course_date
+as
+(
+select 5 as schedule_id,2 as course_id,* from @table_date
+where week_day in(2,4)
+union all
+select 6 as schedule_id,7 as course_id,* from @table_date
+where week_day in(4,5)
+union all
+select 7 as schedule_id,1 as course_id,* from @table_date
+where week_day in(2,4,6)
+union all
+select 8 as schedule_id,7 as course_id,* from @table_date
+where week_day in(2,3)
+union all
+select 9 as schedule_id,8 as course_id,* from @table_date
+where week_day in(5)
+union all
+select 10 as schedule_id,3 as course_id,* from @table_date
+where week_day in(5,6)
+union all
+select 1 as schedule_id,1 as course_id,* from @table_date2
+where week_day in(2,4,6)
+union all
+select 2 as schedule_id,3 as course_id,* from @table_date2
+where week_day in(3,4)
+union all
+select 3 as schedule_id,4 as course_id,* from @table_date2
+where week_day in(2,5)
+union all
+select 4 as schedule_id,5 as course_id,* from @table_date2
+where week_day in(3)
+)
+
+select 
+	SEMESTER_ID
+	,WEEK_ID
+	,COURSE_NAME
+	,cast(count(attend_dt) as float)/cast(count(date_list) as float) ATTENDANCE_PCT
+from
+(
+select 
+	b.STUDENT_ID
+	,a.SCHEDULE_ID
+	,c.COURSE_ID
+	,d.NAME course_name
+	,cast(b.attend_dt as date) attend_dt
+	,a.date_list
+	,a.week_number week_id
+	,a.SEMESTER semester_id
+from course_date a
+left join course_attendance b on cast(b.attend_dt as date)=a.date_list and a.schedule_id=b.SCHEDULE_ID
+left join [dbo].[schedule] c on c.ID=a.SCHEDULE_ID
+left join [dbo].[course] d on c.COURSE_ID=d.ID 
+)a
+group by
+	semester_id
+	,week_id
+	,course_name
