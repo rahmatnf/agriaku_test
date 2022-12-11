@@ -1,0 +1,19 @@
+import pandas as pd
+import glob
+import os
+import datetime
+
+source_course='D:/DOC/Agriaku/course.csv'
+source_course_attendancee='D:/DOC/Agriaku/course_attendance.csv'
+source_enrollment='D:/DOC/Agriaku/enrollment.csv'
+source_schedule='D:/DOC/Agriaku/schedule.csv'
+
+df_course = pd.read_csv(source_course)
+df_course_attendancee = pd.read_csv(source_course_attendancee)
+df_enrollment = pd.read_csv(source_enrollment)
+df_schedule = pd.read_csv(source_schedule)
+
+print(df_course)
+print(df_course_attendancee)
+print(df_enrollment)
+print(df_schedule)
